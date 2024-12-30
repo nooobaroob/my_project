@@ -1,0 +1,3 @@
+Flask==2.3.2
+yt-dlp==2024.01.1
+gunicorn==20.1.0  # Optional, used for deployment in production
