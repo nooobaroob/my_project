@@ -1,1 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Video Downloader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        header {
+            background-color: #0077cc;
+            color: white;
+            text-align: center;
+            padding: 1rem 0;
+        }
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        main {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: white;
+            padding: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        input[type="text"] {
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #0077cc;
+            color: white;
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #005fa3;
+        }
+        #options {
+            margin-top: 2rem;
+        }
+        .option {
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        a {
+            color: #0077cc;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        footer {
+            margin-top: 2rem;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>YouTube Video Downloader</h1>
+    </header>
+    <main>
+        <form id="downloadForm">
+            <input type="text" id="videoUrl" placeholder="Enter YouTube URL" required />
+            <button type="submit">Get Download Options</button>
+        </form>
 
+        <div id="options"></div>
+    </main>
+    <footer>
+        <p>Zair Ahmed No Bar Kalyo</p>
+    </footer>
+
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const url = document.getElementById('videoUrl').value;
+
+            // Ensure URL is not empty
+            if (!url) {
+                alert('Please enter a YouTube URL');
+                return;
+            }
+
+            // Send the URL to the backend for processing
+            fetch('/download', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ 'url': url })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                let optionsHtml = '<h3>Video Quality Options</h3>';
+                data.video_formats.forEach(format => {
+                    optionsHtml += `
+                        <div class="option">
+                            <p><strong>Resolution:</strong> ${format.format}</p>
+                            <a href="${format.url}" download>Download</a>
+                        </div>
+                    `;
+                });
+
+                optionsHtml += '<h3>Audio Format Options</h3>';
+                data.audio_formats.forEach(format => {
+                    optionsHtml += `
+                        <div class="option">
+                            <p><strong>Audio:</strong> ${format.format}</p>
+                            <a href="${format.url}" download>Download</a>
+                        </div>
+                    `;
+                });
+
+                // Display the available download options
+                document.getElementById('options').innerHTML = optionsHtml;
+            })
+            .catch(error => {
+                console.error('Error fetching download options:', error);
+            });
+        });
+    </script>
+</body>
+</html>
